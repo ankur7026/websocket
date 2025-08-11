@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spring Boot WebSocket Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://unpkg.com/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h1>Chat Room</h1>
+<input id="msg" type="text" placeholder="Type a message">
+<button onclick="sendMessage()">Send</button>
+<pre id="chat"></pre>
+
+<script>
+    let stompClient = null;
+
+    function connect() {
+        const socket = new SockJS('/chat');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function (message) {
+                document.getElementById("chat").textContent += message.body + "\n";
+            });
+        });
+    }
+
+    function sendMessage() {
+        const message = document.getElementById("msg").value;
+        stompClient.send("/app/sendMessage", {}, message);
+        document.getElementById("msg").value = '';
+    }
+
+    connect();
+</script>
+</body>
+</html>
